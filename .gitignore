@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local secrets and auth
+.env
+.env.*
+cookies.txt
+*.cookies
+*.log
+
+# Generated scan reports
+bugfinder-report.html
+*-report.html
+*-report.json
+sample-report.*
+spinny-report.*
+
+# Personal bounty notes / target research
+bounty/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
