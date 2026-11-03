@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bugfinder"
+version = "1.0.0"
+description = "Ethical web security scanner with passive, active, and browser checks plus HTML, JSON, and Markdown reports."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Rohit Prajapati" }
+]
+keywords = ["security", "bug-bounty", "scanner", "reconnaissance", "web-security"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Security",
+]
+dependencies = [
+  "requests>=2.31.0",
+  "beautifulsoup4>=4.12.0",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.40.0"]
+
+[project.scripts]
+bugfinder = "bugfinder.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/rohitprajapati487/bugfinder"
+Issues = "https://github.com/rohitprajapati487/bugfinder/issues"
+
+[tool.setuptools.packages.find]
+include = ["bugfinder*"]
