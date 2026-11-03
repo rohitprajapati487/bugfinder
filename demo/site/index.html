@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Intentionally insecure demo page. Local testing only. -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Acme Demo Shop</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    nav a { margin-right: 1rem; }
+    .card { border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/about.html">About</a>
+    <a href="/missing-page.html">Deals</a>
+    <a href=""></a>
+  </nav>
+
+  <h1>Acme Demo Shop</h1>
+  <h1>Welcome to our test store</h1>
+
+  <div class="card" id="duplicate">Demo product one</div>
+  <div class="card" id="duplicate">Demo product two</div>
+
+  <img src="/missing-image.png">
+
+  <form action="/login" method="post">
+    <label>Username <input type="text" name="username"></label>
+    <label>Password <input type="password" name="password"></label>
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    console.error("Demo console error for BugFinder runtime checks");
+  </script>
+</body>
+</html>

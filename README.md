@@ -15,6 +15,28 @@ A lightweight, ethical web security scanner for authorized testing. It crawls a 
 - **Reports** in HTML, JSON, and Markdown with severity filters, search, category grouping, curl reproduction commands, and screenshots
 - **Safety controls** including request rate limiting, request caps, response-size limits, soft-404 filtering, first-party filtering, and finding deduplication
 
+## Demo
+
+![BugFinder report preview](docs/report-preview.png)
+
+A sample scan against the intentionally insecure local site in `demo/site/`:
+
+- [Interactive HTML report](docs/demo.html) — download and open in a browser
+- [Markdown report](docs/demo.md)
+- [JSON report](docs/demo.json)
+
+Reproduce it locally:
+
+```bash
+python3 -m http.server 8767 --bind 127.0.0.1 --directory demo/site
+
+# In another terminal
+bugfinder http://127.0.0.1:8767/ \
+  -o docs/demo.html \
+  --json docs/demo.json \
+  --md docs/demo.md
+```
+
 ## Installation
 
 ```bash
@@ -102,6 +124,8 @@ bugfinder/
   report.py            HTML, JSON, and Markdown report generation
   models.py            Data models
   utils.py             URL and text helpers
+demo/site/             Intentionally insecure pages for local demo scans
+docs/                  Sample reports and report preview
 ```
 
 ## Limitations

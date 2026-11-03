@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BugFinder report - http://127.0.0.1:8767/</title>
+<style>
+:root {
+  --bg: #0f1220;
+  --panel: #171b2e;
+  --panel-2: #1e2338;
+  --text: #e8ecf7;
+  --muted: #9aa4bf;
+  --border: #2a3150;
+  --critical: #ff4d6d;
+  --high: #ff8c42;
+  --medium: #ffd166;
+  --low: #4cc9f0;
+  --info: #9aa4bf;
+  --ok: #4ade80;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(1200px 600px at 10% -10%, #232a4d 0%, var(--bg) 55%);
+  color: var(--text);
+  line-height: 1.5;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+header.hero { margin-bottom: 24px; }
+h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.02em; }
+h1 span { color: var(--low); }
+.target { color: var(--muted); font-size: 14px; word-break: break-all; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; color: var(--muted); font-size: 13px; }
+.meta b { color: var(--text); font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 24px 0; }
+.card {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;
+}
+.card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.card .value { font-size: 30px; font-weight: 700; margin-top: 2px; }
+.card.critical .value { color: var(--critical); }
+.card.high .value { color: var(--high); }
+.card.medium .value { color: var(--medium); }
+.card.low .value { color: var(--low); }
+.card.info .value { color: var(--info); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 28px 0 18px; }
+.controls button, .controls select, .controls input {
+  background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 13px; font-size: 13px; cursor: pointer;
+}
+.controls input { cursor: text; min-width: 240px; flex: 1; }
+.controls button.active { border-color: var(--low); box-shadow: 0 0 0 1px var(--low) inset; }
+.controls .spacer { flex: 1; }
+#visible-count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.section-title { margin: 30px 0 12px; font-size: 18px; }
+.finding {
+  background: var(--panel); border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+}
+.finding.critical { border-left-color: var(--critical); }
+.finding.high { border-left-color: var(--high); }
+.finding.medium { border-left-color: var(--medium); }
+.finding.low { border-left-color: var(--low); }
+.finding.info { border-left-color: var(--info); }
+.finding .top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.badge {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 3px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
+}
+.badge.critical { color: var(--critical); border-color: var(--critical); }
+.badge.high { color: var(--high); border-color: var(--high); }
+.badge.medium { color: var(--medium); border-color: var(--medium); }
+.badge.low { color: var(--low); border-color: var(--low); }
+.badge.info { color: var(--info); }
+.finding h3 { font-size: 15px; margin: 0; flex: 1; min-width: 220px; }
+.cat { color: var(--muted); font-size: 12px; }
+.finding .url { color: var(--low); font-size: 12px; word-break: break-all; margin: 8px 0 0; }
+.finding pre {
+  background: #0b0e19; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; overflow-x: auto; font-size: 12px; color: #c7d0e8; white-space: pre-wrap; word-break: break-word;
+}
+.finding .fix { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.finding .fix b { color: var(--ok); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+figure { margin: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+figure img { width: 100%; display: block; cursor: zoom-in; }
+figcaption { padding: 8px 10px; color: var(--muted); font-size: 11px; word-break: break-all; }
+.empty { background: var(--panel); border: 1px dashed var(--border); border-radius: 12px; padding: 30px; text-align: center; color: var(--muted); }
+footer { margin-top: 40px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+footer code { color: var(--text); }
+#lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none;
+  align-items: center; justify-content: center; padding: 24px; z-index: 50; cursor: zoom-out;
+}
+#lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+@media (max-width: 640px) { h1 { font-size: 23px; } .wrap { padding: 22px 14px 48px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Bug<span>Finder</span> report</h1>
+    <div class="target">http://127.0.0.1:8767/</div>
+    <div class="meta">
+      <span>Started: <b>2026-11-03 12:59:19</b></span>
+      <span>Finished: <b>2026-11-03 12:59:32</b></span>
+      <span>Duration: <b>13.4s</b></span>
+      <span>Pages scanned: <b>3</b></span>
+      <span>Links found: <b>3</b></span>
+      <span>Forms found: <b>1</b></span>
+      <span>Generated: <b>2026-11-03 12:59:32</b></span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card"><div class="label">Total findings</div><div class="value">32</div></div>
+    <div class="card critical"><div class="label">Critical</div><div class="value">2</div></div><div class="card high"><div class="label">High</div><div class="value">1</div></div><div class="card medium"><div class="label">Medium</div><div class="value">5</div></div><div class="card low"><div class="label">Low</div><div class="value">15</div></div><div class="card info"><div class="label">Info</div><div class="value">9</div></div>
+  </div>
+
+  <div class="controls">
+    <button data-filter="all" class="active">All</button><button data-filter="critical" class="">Critical</button><button data-filter="high" class="">High</button><button data-filter="medium" class="">Medium</button><button data-filter="low" class="">Low</button><button data-filter="info" class="">Info</button>
+    <select id="category"><option value="all">All categories (32)</option><option value="Forms">Forms</option><option value="Transport Security">Transport Security</option><option value="Security Headers">Security Headers</option><option value="Availability">Availability</option><option value="Broken Links">Broken Links</option><option value="Accessibility">Accessibility</option><option value="Information Disclosure">Information Disclosure</option><option value="JavaScript">JavaScript</option><option value="Network">Network</option><option value="SEO">SEO</option><option value="Fingerprint">Fingerprint</option><option value="Security Policy">Security Policy</option></select>
+    <input id="search" type="search" placeholder="Search findings...">
+    <span id="visible-count"></span>
+  </div>
+
+  <section class="category-block" data-category="Forms"><h2 class="section-title">Forms <span class="cat">(3)</span></h2>
+    <article class="finding critical" data-severity="critical" data-category="Forms">
+      <div class="top">
+        <span class="badge critical">Critical</span>
+        <h3>Password form submits over plain HTTP</h3>
+        <span class="cat">Forms</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Form action: http://127.0.0.1:8767/login</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Serve the form and submit credentials only over HTTPS.</p>
+    </article>
+    <article class="finding medium" data-severity="medium" data-category="Forms">
+      <div class="top">
+        <span class="badge medium">Medium</span>
+        <h3>Login form has no visible CSRF token</h3>
+        <span class="cat">Forms</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Form action: http://127.0.0.1:8767/login, fields: username, password</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Add and validate an anti-CSRF token for state-changing and authentication forms.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="Forms">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Password field may allow autocomplete</h3>
+        <span class="cat">Forms</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Password field(s): password</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Use autocomplete=&#x27;current-password&#x27; or &#x27;new-password&#x27; as appropriate.</p>
+    </article></section><section class="category-block" data-category="Transport Security"><h2 class="section-title">Transport Security <span class="cat">(1)</span></h2>
+    <article class="finding critical" data-severity="critical" data-category="Transport Security">
+      <div class="top">
+        <span class="badge critical">Critical</span>
+        <h3>HTTPS is not available</h3>
+        <span class="cat">Transport Security</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>SSLError: HTTPSConnectionPool(host=&#x27;127.0.0.1&#x27;, port=8767): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, &#x27;[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:992)&#x27;)))</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Enable HTTPS with a valid certificate.</p>
+    </article></section><section class="category-block" data-category="Security Headers"><h2 class="section-title">Security Headers <span class="cat">(5)</span></h2>
+    <article class="finding high" data-severity="high" data-category="Security Headers">
+      <div class="top">
+        <span class="badge high">High</span>
+        <h3>Content-Security-Policy header is missing</h3>
+        <span class="cat">Security Headers</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Add a strict Content-Security-Policy to reduce XSS and injection risk.</p>
+    </article>
+    <article class="finding medium" data-severity="medium" data-category="Security Headers">
+      <div class="top">
+        <span class="badge medium">Medium</span>
+        <h3>X-Frame-Options / frame-ancestors protection is missing</h3>
+        <span class="cat">Security Headers</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Set X-Frame-Options: DENY/SAMEORIGIN or CSP frame-ancestors to prevent clickjacking.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="Security Headers">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Referrer-Policy header is missing</h3>
+        <span class="cat">Security Headers</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Set Referrer-Policy: strict-origin-when-cross-origin or stricter.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="Security Headers">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>X-Content-Type-Options header is missing</h3>
+        <span class="cat">Security Headers</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Set X-Content-Type-Options: nosniff.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="Security Headers">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Permissions-Policy header is missing</h3>
+        <span class="cat">Security Headers</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Restrict powerful browser features with Permissions-Policy.</p>
+    </article></section><section class="category-block" data-category="Availability"><h2 class="section-title">Availability <span class="cat">(1)</span></h2>
+    <article class="finding medium" data-severity="medium" data-category="Availability">
+      <div class="top">
+        <span class="badge medium">Medium</span>
+        <h3>Client error (HTTP 404)</h3>
+        <span class="cat">Availability</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/missing-page.html</div>
+      <pre>HTTP 404 returned for http://127.0.0.1:8767/missing-page.html</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/missing-page.html'</pre>
+      <p class="fix"><b>Fix:</b> Fix the broken page or update links pointing to it.</p>
+    </article></section><section class="category-block" data-category="Broken Links"><h2 class="section-title">Broken Links <span class="cat">(2)</span></h2>
+    <article class="finding medium" data-severity="medium" data-category="Broken Links">
+      <div class="top">
+        <span class="badge medium">Medium</span>
+        <h3>Broken internal resource</h3>
+        <span class="cat">Broken Links</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/missing-image.png</div>
+      <pre>HTTP 404 for http://127.0.0.1:8767/missing-image.png</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/missing-image.png'</pre>
+      <p class="fix"><b>Fix:</b> Fix the missing resource (image/script/style) or update its reference.</p>
+    </article>
+    <article class="finding medium" data-severity="medium" data-category="Broken Links">
+      <div class="top">
+        <span class="badge medium">Medium</span>
+        <h3>Broken or unloaded images</h3>
+        <span class="cat">Broken Links</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Images failed to load: http://127.0.0.1:8767/missing-image.png</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Fix image paths or serve valid image files.</p>
+    </article></section><section class="category-block" data-category="Accessibility"><h2 class="section-title">Accessibility <span class="cat">(1)</span></h2>
+    <article class="finding low" data-severity="low" data-category="Accessibility">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Accessibility issues found</h3>
+        <span class="cat">Accessibility</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>1 image(s) without alt text; 2 form field(s) without an associated label; 1 link(s) without accessible text; duplicate id attribute(s): duplicate</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Fix labels, alt text, accessible link names and duplicate IDs.</p>
+    </article></section><section class="category-block" data-category="Information Disclosure"><h2 class="section-title">Information Disclosure <span class="cat">(1)</span></h2>
+    <article class="finding low" data-severity="low" data-category="Information Disclosure">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Server version disclosed</h3>
+        <span class="cat">Information Disclosure</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Server: SimpleHTTP/0.6 Python/3.11.2</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Remove version details from the Server header.</p>
+    </article></section><section class="category-block" data-category="JavaScript"><h2 class="section-title">JavaScript <span class="cat">(2)</span></h2>
+    <article class="finding low" data-severity="low" data-category="JavaScript">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Console error in browser</h3>
+        <span class="cat">JavaScript</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Failed to load resource: the server responded with a status of 404 (File not found)</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Fix JavaScript errors reported in the browser console.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="JavaScript">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Console error in browser</h3>
+        <span class="cat">JavaScript</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Demo console error for BugFinder runtime checks</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Fix JavaScript errors reported in the browser console.</p>
+    </article></section><section class="category-block" data-category="Network"><h2 class="section-title">Network <span class="cat">(1)</span></h2>
+    <article class="finding low" data-severity="low" data-category="Network">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Subresource returned an error status</h3>
+        <span class="cat">Network</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>404 http://127.0.0.1:8767/missing-image.png</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Fix the failing subresource (image/script/style/API).</p>
+    </article></section><section class="category-block" data-category="SEO"><h2 class="section-title">SEO <span class="cat">(13)</span></h2>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing HTML lang attribute</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>The &lt;html&gt; element has no lang attribute.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Add a lang attribute to the &lt;html&gt; element.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing HTML lang attribute</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/about.html</div>
+      <pre>The &lt;html&gt; element has no lang attribute.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/about.html'</pre>
+      <p class="fix"><b>Fix:</b> Add a lang attribute to the &lt;html&gt; element.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing meta description</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>No meta description tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Add a concise meta description.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing meta description</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/about.html</div>
+      <pre>No meta description tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/about.html'</pre>
+      <p class="fix"><b>Fix:</b> Add a concise meta description.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing meta description</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/missing-page.html</div>
+      <pre>No meta description tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/missing-page.html'</pre>
+      <p class="fix"><b>Fix:</b> Add a concise meta description.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing viewport meta tag</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>No viewport meta tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Add &lt;meta name=&#x27;viewport&#x27; content=&#x27;width=device-width, initial-scale=1&#x27;&gt;.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing viewport meta tag</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/about.html</div>
+      <pre>No viewport meta tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/about.html'</pre>
+      <p class="fix"><b>Fix:</b> Add &lt;meta name=&#x27;viewport&#x27; content=&#x27;width=device-width, initial-scale=1&#x27;&gt;.</p>
+    </article>
+    <article class="finding low" data-severity="low" data-category="SEO">
+      <div class="top">
+        <span class="badge low">Low</span>
+        <h3>Missing viewport meta tag</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/missing-page.html</div>
+      <pre>No viewport meta tag found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/missing-page.html'</pre>
+      <p class="fix"><b>Fix:</b> Add &lt;meta name=&#x27;viewport&#x27; content=&#x27;width=device-width, initial-scale=1&#x27;&gt;.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="SEO">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Missing canonical link</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>No canonical link element found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Add rel=&#x27;canonical&#x27; to avoid duplicate content issues.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="SEO">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Missing canonical link</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/about.html</div>
+      <pre>No canonical link element found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/about.html'</pre>
+      <p class="fix"><b>Fix:</b> Add rel=&#x27;canonical&#x27; to avoid duplicate content issues.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="SEO">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Missing canonical link</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/missing-page.html</div>
+      <pre>No canonical link element found.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/missing-page.html'</pre>
+      <p class="fix"><b>Fix:</b> Add rel=&#x27;canonical&#x27; to avoid duplicate content issues.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="SEO">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Multiple H1 headings</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/</div>
+      <pre>Found 2 &lt;h1&gt; elements.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/'</pre>
+      <p class="fix"><b>Fix:</b> Use a single H1 per page for clear hierarchy.</p>
+    </article>
+    <article class="finding info" data-severity="info" data-category="SEO">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>robots.txt is missing</h3>
+        <span class="cat">SEO</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/robots.txt</div>
+      <pre>HTTP 404</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/robots.txt'</pre>
+      <p class="fix"><b>Fix:</b> Add a robots.txt to guide crawlers and reference the sitemap.</p>
+    </article></section><section class="category-block" data-category="Fingerprint"><h2 class="section-title">Fingerprint <span class="cat">(1)</span></h2>
+    <article class="finding info" data-severity="info" data-category="Fingerprint">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>Technology stack detected</h3>
+        <span class="cat">Fingerprint</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767</div>
+      <pre>Detected: Python HTTP server</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767'</pre>
+      <p class="fix"><b>Fix:</b> Review component versions and vendor-specific defaults for known issues.</p>
+    </article></section><section class="category-block" data-category="Security Policy"><h2 class="section-title">Security Policy <span class="cat">(1)</span></h2>
+    <article class="finding info" data-severity="info" data-category="Security Policy">
+      <div class="top">
+        <span class="badge info">Info</span>
+        <h3>No security.txt published</h3>
+        <span class="cat">Security Policy</span>
+      </div>
+      <div class="url">http://127.0.0.1:8767/.well-known/security.txt</div>
+      <pre>Neither /.well-known/security.txt nor /security.txt returned a valid policy.</pre>
+      <pre class="repro"># Reproduce
+curl -sS -i 'http://127.0.0.1:8767/.well-known/security.txt'</pre>
+      <p class="fix"><b>Fix:</b> Publish a security.txt with a monitored Contact address and an Expires date.</p>
+    </article></section>
+
+  <h2 class="section-title">Page screenshots</h2><div class="gallery"><figure><img loading="lazy" alt="Screenshot of http://127.0.0.1:8767/" src="data:image/jpeg;base64,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+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wKE75O5T1T7G+TuU9U+wK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h08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08oUAnlY/Dp5QcrH4dPKFAJ5WPw6eUHKx+HTyhQCeVj8OnlBysfh08o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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q=="><figcaption>http://127.0.0.1:8767/</figcaption></figure><figure><img loading="lazy" alt="Screenshot of http://127.0.0.1:8767/about.html" src="data:image/jpeg;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=="><figcaption>http://127.0.0.1:8767/about.html</figcaption></figure></div>
+
+  <footer>
+    Generated by <code>BugFinder</code>. Findings are automated heuristics and may include false positives;
+    always verify manually before reporting. Only scan sites you own or have explicit permission to test.<br>
+    JSON data is available alongside this report when <code>--json</code> is used.
+  </footer>
+</div>
+<div id="lightbox"><img id="lightbox-img" alt="Enlarged screenshot"></div>
+<script>
+const buttons = document.querySelectorAll('[data-filter]');
+const categorySelect = document.getElementById('category');
+const search = document.getElementById('search');
+const findings = Array.from(document.querySelectorAll('.finding'));
+const countEl = document.getElementById('visible-count');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+let severityFilter = 'all';
+
+function apply() {
+  const query = (search.value || '').toLowerCase().trim();
+  const category = categorySelect.value;
+  let visible = 0;
+  findings.forEach((el) => {
+    const matchSeverity = severityFilter === 'all' || el.dataset.severity === severityFilter;
+    const matchCategory = category === 'all' || el.dataset.category === category;
+    const matchQuery = !query || el.textContent.toLowerCase().includes(query);
+    const show = matchSeverity && matchCategory && matchQuery;
+    el.style.display = show ? '' : 'none';
+    if (show) visible += 1;
+  });
+  countEl.textContent = visible + ' of ' + findings.length + ' findings shown';
+  document.querySelectorAll('.category-block').forEach((block) => {
+    const any = Array.from(block.querySelectorAll('.finding')).some((el) => el.style.display !== 'none');
+    block.style.display = any ? '' : 'none';
+  });
+}
+
+buttons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    buttons.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    severityFilter = btn.dataset.filter;
+    apply();
+  });
+});
+categorySelect.addEventListener('change', apply);
+search.addEventListener('input', apply);
+document.querySelectorAll('.gallery img').forEach((img) => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.src;
+    lightbox.style.display = 'flex';
+  });
+});
+lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
+apply();
+</script>
+</body>
+</html>

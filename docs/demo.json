@@ -1,0 +1,314 @@
+{
+  "target": "http://127.0.0.1:8767/",
+  "started_at": "2026-11-03 12:59:19",
+  "finished_at": "2026-11-03 12:59:32",
+  "duration_seconds": 13.368094,
+  "pages_scanned": 3,
+  "stats": {
+    "links": 3,
+    "external_links": 0,
+    "forms": 1,
+    "resources": 1,
+    "origin": "http://127.0.0.1:8767",
+    "active_checks": true,
+    "browser_checks": true,
+    "requests": 41
+  },
+  "counts": {
+    "critical": 2,
+    "high": 1,
+    "medium": 5,
+    "low": 15,
+    "info": 9
+  },
+  "findings": [
+    {
+      "category": "Forms",
+      "title": "Password form submits over plain HTTP",
+      "severity": "critical",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Form action: http://127.0.0.1:8767/login",
+      "remediation": "Serve the form and submit credentials only over HTTPS.",
+      "extra": {}
+    },
+    {
+      "category": "Transport Security",
+      "title": "HTTPS is not available",
+      "severity": "critical",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "SSLError: HTTPSConnectionPool(host='127.0.0.1', port=8767): Max retries exceeded with url: / (Caused by SSLError(SSLError(1, '[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:992)')))",
+      "remediation": "Enable HTTPS with a valid certificate.",
+      "extra": {}
+    },
+    {
+      "category": "Security Headers",
+      "title": "Content-Security-Policy header is missing",
+      "severity": "high",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server",
+      "remediation": "Add a strict Content-Security-Policy to reduce XSS and injection risk.",
+      "extra": {}
+    },
+    {
+      "category": "Availability",
+      "title": "Client error (HTTP 404)",
+      "severity": "medium",
+      "url": "http://127.0.0.1:8767/missing-page.html",
+      "evidence": "HTTP 404 returned for http://127.0.0.1:8767/missing-page.html",
+      "remediation": "Fix the broken page or update links pointing to it.",
+      "extra": {}
+    },
+    {
+      "category": "Broken Links",
+      "title": "Broken internal resource",
+      "severity": "medium",
+      "url": "http://127.0.0.1:8767/missing-image.png",
+      "evidence": "HTTP 404 for http://127.0.0.1:8767/missing-image.png",
+      "remediation": "Fix the missing resource (image/script/style) or update its reference.",
+      "extra": {}
+    },
+    {
+      "category": "Broken Links",
+      "title": "Broken or unloaded images",
+      "severity": "medium",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Images failed to load: http://127.0.0.1:8767/missing-image.png",
+      "remediation": "Fix image paths or serve valid image files.",
+      "extra": {}
+    },
+    {
+      "category": "Forms",
+      "title": "Login form has no visible CSRF token",
+      "severity": "medium",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Form action: http://127.0.0.1:8767/login, fields: username, password",
+      "remediation": "Add and validate an anti-CSRF token for state-changing and authentication forms.",
+      "extra": {}
+    },
+    {
+      "category": "Security Headers",
+      "title": "X-Frame-Options / frame-ancestors protection is missing",
+      "severity": "medium",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server",
+      "remediation": "Set X-Frame-Options: DENY/SAMEORIGIN or CSP frame-ancestors to prevent clickjacking.",
+      "extra": {}
+    },
+    {
+      "category": "Accessibility",
+      "title": "Accessibility issues found",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "1 image(s) without alt text; 2 form field(s) without an associated label; 1 link(s) without accessible text; duplicate id attribute(s): duplicate",
+      "remediation": "Fix labels, alt text, accessible link names and duplicate IDs.",
+      "extra": {}
+    },
+    {
+      "category": "Information Disclosure",
+      "title": "Server version disclosed",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Server: SimpleHTTP/0.6 Python/3.11.2",
+      "remediation": "Remove version details from the Server header.",
+      "extra": {}
+    },
+    {
+      "category": "JavaScript",
+      "title": "Console error in browser",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "remediation": "Fix JavaScript errors reported in the browser console.",
+      "extra": {}
+    },
+    {
+      "category": "JavaScript",
+      "title": "Console error in browser",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Demo console error for BugFinder runtime checks",
+      "remediation": "Fix JavaScript errors reported in the browser console.",
+      "extra": {}
+    },
+    {
+      "category": "Network",
+      "title": "Subresource returned an error status",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "404 http://127.0.0.1:8767/missing-image.png",
+      "remediation": "Fix the failing subresource (image/script/style/API).",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing HTML lang attribute",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "The <html> element has no lang attribute.",
+      "remediation": "Add a lang attribute to the <html> element.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing HTML lang attribute",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/about.html",
+      "evidence": "The <html> element has no lang attribute.",
+      "remediation": "Add a lang attribute to the <html> element.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing meta description",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "No meta description tag found.",
+      "remediation": "Add a concise meta description.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing meta description",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/about.html",
+      "evidence": "No meta description tag found.",
+      "remediation": "Add a concise meta description.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing meta description",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/missing-page.html",
+      "evidence": "No meta description tag found.",
+      "remediation": "Add a concise meta description.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing viewport meta tag",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "No viewport meta tag found.",
+      "remediation": "Add <meta name='viewport' content='width=device-width, initial-scale=1'>.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing viewport meta tag",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/about.html",
+      "evidence": "No viewport meta tag found.",
+      "remediation": "Add <meta name='viewport' content='width=device-width, initial-scale=1'>.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing viewport meta tag",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767/missing-page.html",
+      "evidence": "No viewport meta tag found.",
+      "remediation": "Add <meta name='viewport' content='width=device-width, initial-scale=1'>.",
+      "extra": {}
+    },
+    {
+      "category": "Security Headers",
+      "title": "Referrer-Policy header is missing",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server",
+      "remediation": "Set Referrer-Policy: strict-origin-when-cross-origin or stricter.",
+      "extra": {}
+    },
+    {
+      "category": "Security Headers",
+      "title": "X-Content-Type-Options header is missing",
+      "severity": "low",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server",
+      "remediation": "Set X-Content-Type-Options: nosniff.",
+      "extra": {}
+    },
+    {
+      "category": "Fingerprint",
+      "title": "Technology stack detected",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Detected: Python HTTP server",
+      "remediation": "Review component versions and vendor-specific defaults for known issues.",
+      "extra": {}
+    },
+    {
+      "category": "Forms",
+      "title": "Password field may allow autocomplete",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Password field(s): password",
+      "remediation": "Use autocomplete='current-password' or 'new-password' as appropriate.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing canonical link",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "No canonical link element found.",
+      "remediation": "Add rel='canonical' to avoid duplicate content issues.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing canonical link",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/about.html",
+      "evidence": "No canonical link element found.",
+      "remediation": "Add rel='canonical' to avoid duplicate content issues.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Missing canonical link",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/missing-page.html",
+      "evidence": "No canonical link element found.",
+      "remediation": "Add rel='canonical' to avoid duplicate content issues.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "Multiple H1 headings",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/",
+      "evidence": "Found 2 <h1> elements.",
+      "remediation": "Use a single H1 per page for clear hierarchy.",
+      "extra": {}
+    },
+    {
+      "category": "SEO",
+      "title": "robots.txt is missing",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/robots.txt",
+      "evidence": "HTTP 404",
+      "remediation": "Add a robots.txt to guide crawlers and reference the sitemap.",
+      "extra": {}
+    },
+    {
+      "category": "Security Headers",
+      "title": "Permissions-Policy header is missing",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767",
+      "evidence": "Response headers for http://127.0.0.1:8767: content-length, content-type, date, last-modified, server",
+      "remediation": "Restrict powerful browser features with Permissions-Policy.",
+      "extra": {}
+    },
+    {
+      "category": "Security Policy",
+      "title": "No security.txt published",
+      "severity": "info",
+      "url": "http://127.0.0.1:8767/.well-known/security.txt",
+      "evidence": "Neither /.well-known/security.txt nor /security.txt returned a valid policy.",
+      "remediation": "Publish a security.txt with a monitored Contact address and an Expires date.",
+      "extra": {}
+    }
+  ]
+}
